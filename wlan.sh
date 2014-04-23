@@ -96,14 +96,18 @@ selectEncryption() {
 			;;
 
   		2)	setPassword
-			
+			connecting
+			iwconfig $DEVICE essid "${NETWORK}"
+			iwconfig $DEVICE key "${PASSWORD}"
+			dhclient ${DEVICE}
+			checkIP
 			;;
 
   		3)	setPassword
 			connecting
-			wpa_passphrase ${NETWORK} ${PASSWORD} > wpa_psk_${NETWORK}.conf
+			wpa_passphrase "${NETWORK}" "${PASSWORD}" > wpa_psk_"${NETWORK}".conf
 			killall wpa_supplicant 2> /dev/null
-			wpa_supplicant -i ${DEVICE} -c wpa_psk_${NETWORK}.conf -B 2> /dev/null
+			wpa_supplicant -i ${DEVICE} -c wpa_psk_"${NETWORK}".conf -B 2> /dev/null
 			dhclient ${DEVICE}
 			checkIP
 			;;
