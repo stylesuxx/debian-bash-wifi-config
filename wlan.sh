@@ -31,9 +31,8 @@ selectNetwork() {
 	dialog  --title "Scanning" \
 			--infobox "Scanning for networks..." 3 50
 
+	service network-manager stop > /dev/null
 	ifconfig $DEVICE up > /dev/null
-	dhclient -r $DEVICE > /dev/null
-	rm /var/lib/dhcp/dhclient.leases
 	iwlist $DEVICE scan | grep ESSID | cut -d"\"" -f2 > $TEMPFILE1
 	options=()
 	counter=1
@@ -88,6 +87,8 @@ selectEncryption() {
 				3 "NONE" 2> $TEMPFILE1
 	proceed
 
+	dhclient -r $DEVICE > /dev/null
+	rm /var/lib/dhcp/dhclient.leases
 	choice=$(cat $TEMPFILE1)
 	case $choice in
   		1)	
