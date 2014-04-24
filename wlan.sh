@@ -90,7 +90,8 @@ selectEncryption() {
 
 	choice=$(cat $TEMPFILE1)
 	case $choice in
-  		1)	setPassword
+  		1)	
+			setPassword
 			connecting
 			wpa_passphrase "${NETWORK}" "${PASSWORD}" > wpa_psk_"${NETWORK}".conf
 			killall wpa_supplicant 2> /dev/null
@@ -99,7 +100,8 @@ selectEncryption() {
 			checkIP
 			;;
 
-  		2)	setPassword
+  		2)	
+			setPassword
 			connecting
 			iwconfig $DEVICE essid "${NETWORK}"
 			iwconfig $DEVICE key "${PASSWORD}"
