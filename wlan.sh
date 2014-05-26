@@ -5,6 +5,8 @@ initVars() {
 	NETWORK="NETWORK_NOT_SET"
 	PASSWORD="PASSWORD_NOT_SET"
 
+	CONFDIR="wifi"
+
 	TEMPFILE1=/tmp/wlan_dialog_1_$$
 	TEMPFILE2=/tmp/wlan_dialog_2_$$
 }
@@ -31,8 +33,8 @@ selectNetwork() {
 	dialog  --title "Scanning" \
 			--infobox "Scanning for networks..." 3 50
 
-	service network-manager stop > /dev/null
-	ifconfig $DEVICE up > /dev/null
+	service network-manager stop > /dev/null 2>&1
+	ifconfig $DEVICE up > /dev/null 2>&1
 	iwlist $DEVICE scan | grep ESSID | cut -d"\"" -f2 > $TEMPFILE1
 	options=()
 	counter=1
@@ -87,16 +89,18 @@ selectEncryption() {
 				3 "NONE" 2> $TEMPFILE1
 	proceed
 
-	dhclient -r $DEVICE > /dev/null
-	rm /var/lib/dhcp/dhclient.leases
+	dhclient -r $DEVICE > /dev/null 2>&1
+	rm /var/lib/dhcp/dhclient.leases > /dev/null 2>&1
+	mkdir -p "${CONFDIR}"
 	choice=$(cat $TEMPFILE1)
 	case $choice in
   		1)	
 			setPassword
 			connecting
-			wpa_passphrase "${NETWORK}" "${PASSWORD}" > wpa_psk_"${NETWORK}".conf
-			killall wpa_supplicant 2> /dev/null
-			wpa_supplicant -i ${DEVICE} -c wpa_psk_"${NETWORK}".conf -B 2> /dev/null
+			wpa_passphrase "${NETWORK}" "${PASSWORD}" > "${CONFDIR}"/wpa_psk_"${NETWORK}".conf
+			killall wpa_supplicant > /dev/null 2>&1
+			wpa_supplicant -i ${DEVICE} -c "${CONFDIR}"/wpa_psk_"${NETWORK}".conf -B > /dev/null 2>&1
+			ln -s "${CONFDIR}"/wpa_psk_"${NETWORK}".conf "${CONFDIR}"/last_wifi.conf
 			dhclient ${DEVICE}
 			checkIP
 			;;
@@ -112,8 +116,8 @@ selectEncryption() {
 
   		3) 
 			connecting
-			iwconfig ${DEVICE} essid "${NETWORK}" > /dev/null
-			dhclient ${DEVICE} > /dev/null
+			iwconfig ${DEVICE} essid "${NETWORK}" > /dev/null 2>&1
+			dhclient ${DEVICE} > /dev/null 2>&1
 			checkIP
 			;;
 	esac
